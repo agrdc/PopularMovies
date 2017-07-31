@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">PopularMovies</string>
+    <string name="error_message">There was an error loading the movies. Please try again</string>
+    <string name="loading_message">Loading&#8230;</string>
+    <string name="sort_by">Sort by</string>
+    <string name="title_most_popular">Most popular</string>
+    <string name="title_top_rated">Top rated</string>
+</resources>
