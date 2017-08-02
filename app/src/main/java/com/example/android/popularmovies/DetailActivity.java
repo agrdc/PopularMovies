@@ -7,7 +7,7 @@ import android.os.Bundle;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.example.android.popularmovies.Utils.NetworkUtils;
+import com.example.android.popularmovies.utils.NetworkUtils;
 import com.squareup.picasso.Picasso;
 
 public class DetailActivity extends AppCompatActivity {

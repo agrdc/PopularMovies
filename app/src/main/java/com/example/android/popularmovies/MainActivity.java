@@ -1,6 +1,9 @@
 package com.example.android.popularmovies;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 
 import android.support.v7.app.AppCompatActivity;
@@ -16,8 +19,8 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.example.android.popularmovies.Utils.JsonUtils;
-import com.example.android.popularmovies.Utils.NetworkUtils;
+import com.example.android.popularmovies.utils.JsonUtils;
+import com.example.android.popularmovies.utils.NetworkUtils;
 
 import org.json.JSONException;
 
@@ -61,19 +64,33 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
         mRecyclerView.setAdapter(mMoviesAdapter);
 
         if (savedInstanceState != null) {
-            mHttpResponse = savedInstanceState.getString(TAG_HTTP_RESPONSE);
             Log.d(LOG_TAG, "savedInstanceState!=null");
+            mHttpResponse = savedInstanceState.getString(TAG_HTTP_RESPONSE);
             List<String[]> moviesData = null;
-            try {
-                moviesData = JsonUtils.getMoviesDataFromHttpResponse(mHttpResponse);
-            } catch (JSONException e) {
-                e.printStackTrace();
+            if (mHttpResponse != null) {
+                displayMovieView();
+                try {
+                    moviesData = JsonUtils.getMoviesDataFromHttpResponse(mHttpResponse);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                displayErrorMessage();
             }
             mMoviesAdapter.setMoviesData(moviesData);
         } else {
             Log.d(LOG_TAG, "savedInstanceState==null");
             loadPopularMoviesData();
         }
+    }
+
+    public boolean hasNetworkConnection() {
+        ConnectivityManager cm =
+                (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        boolean isConnected = activeNetwork != null &&
+                activeNetwork.isConnectedOrConnecting();
+        return isConnected;
     }
 
     @Override
@@ -102,9 +119,14 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
     }
 
     private void loadPopularMoviesData() {
-        displayMovieView();
-        FetchMoviesTask fetchMoviesTask = new FetchMoviesTask();
-        fetchMoviesTask.execute(NetworkUtils.buildPopularMoviesUrl());
+        if (hasNetworkConnection()) {
+            displayMovieView();
+            FetchMoviesTask fetchMoviesTask = new FetchMoviesTask();
+            fetchMoviesTask.execute(NetworkUtils.buildPopularMoviesUrl());
+        }
+        else {
+            displayErrorMessage();
+        }
     }
 
     private void loadTopRatedMoviesData() {
@@ -143,8 +165,9 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
             if (moviesData != null) {
                 displayMovieView();
                 mMoviesAdapter.setMoviesData(moviesData);
-            } else
+            } else {
                 displayErrorMessage();
+            }
             super.onPostExecute(moviesData);
         }
     }

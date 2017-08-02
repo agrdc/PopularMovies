@@ -1,4 +1,4 @@
-package com.example.android.popularmovies.Utils;
+package com.example.android.popularmovies.utils;
 
 import android.net.Uri;
 import android.util.Log;
@@ -23,8 +23,7 @@ public class NetworkUtils {
     final static String PATH_TOP_RATED = "top_rated";
 
     //TODO enter your themoviedb.org API key here
-    final static String API_KEY = "";
-
+    final static String API_KEY = "433f36e76544735f18173fa0dce254d5";
     final static String PARAM_API_KEY = "api_key";
 
     public static Uri buildImageUri(String posterPath) {
@@ -68,6 +67,10 @@ public class NetworkUtils {
 
     public static String getResponseFromHttpUrl(URL url) throws IOException {
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+        //setting connection timeout to 5s
+        urlConnection.setConnectTimeout(5000);
+        //setting read data timeout to 7s
+        urlConnection.setReadTimeout(7000);
         try {
             InputStream in = urlConnection.getInputStream();
 
