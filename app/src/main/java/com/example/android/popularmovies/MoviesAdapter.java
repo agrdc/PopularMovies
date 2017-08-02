@@ -11,7 +11,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
-import com.example.android.popularmovies.Utils.NetworkUtils;
+
+import com.example.android.popularmovies.utils.NetworkUtils;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
@@ -46,7 +47,8 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesAdap
         // get width and height from display, to resize the movie image to half width/height of the screen
         int height = Resources.getSystem().getDisplayMetrics().heightPixels / 2;
         int width = Resources.getSystem().getDisplayMetrics().widthPixels / 2;
-        Picasso.with(mContext).load(imageUri).resize(width, height).centerInside().into(holder.imageViewMoviePoster);
+        Picasso.with(mContext).load(imageUri).resize(width, height).centerInside()
+                .into(holder.imageViewMoviePoster);
     }
 
     @Override
