@@ -18,5 +18,4 @@ public class PopularMoviesPreferences {
         String defaultSort = context.getString(R.string.pref_top_rated);
         return sharedPreferences.getString(keySortBy,defaultSort);
     }
-
 }

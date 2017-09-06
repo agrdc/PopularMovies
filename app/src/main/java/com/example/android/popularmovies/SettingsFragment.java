@@ -63,7 +63,6 @@ public class SettingsFragment extends PreferenceFragmentCompat
                 //TODO if it does, load this data else fetch it.
                 String valueSelected = PopularMoviesPreferences.getSortByPreferenceValue(getContext());
                 if (valueSelected.equals(getString(R.string.pref_top_rated)) {
-
                 }
             }*/
     }

@@ -2,10 +2,15 @@ package com.example.android.popularmovies;
 
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
@@ -29,23 +34,43 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements MoviesAdapter.MoviesAdapterOnClickHandler {
+public class MainActivity extends AppCompatActivity 
+        implements MoviesAdapter.MoviesAdapterOnClickHandler, LoaderManager.LoaderCallbacks<Cursor>{
 
-    private String LOG_TAG = MainActivity.class.getSimpleName();
+    private static final String LOG_TAG = MainActivity.class.getSimpleName();
 
     private MoviesAdapter mMoviesAdapter;
     private RecyclerView mRecyclerView;
 
-    private final String TAG_MOVIE_DATA = "MOVIE_DATA";
-    private final String TAG_HTTP_RESPONSE = "HTTP_RESPONSE";
+    private static final String[] PROJECTION_FAVORITE_MOVIES = {
+            MovieContract.MovieEntry.COLUMN_TITLE,
+            MovieContract.MovieEntry.COLUMN_MOVIE_ID,
+            MovieContract.MovieEntry.COLUMN_OVERVIEW,
+            MovieContract.MovieEntry.COLUMN_RATING,
+            MovieContract.MovieEntry.COLUMN_RELEASE_DATE,
+            MovieContract.MovieEntry.COLUMN_POSTER_PATH
+    };
+
+    public static final int INDEX_TITLE = 0;
+    public static final int INDEX_MOVIE_ID = 1;
+    public static final int OVERVIEW = 2;
+    public static final int RATING = 3;
+    public static final int RELEASE_DATE = 4;
+    public static final int POSTER_PATH = 5;
+
+    private static final String TAG_MOVIE_DATA = "MOVIE_DATA";
+    private static final String TAG_HTTP_RESPONSE = "HTTP_RESPONSE";
+
+    private static final int ID_MOVIES_LOADER = 324;
 
     private TextView mErrorMessageTextView;
 
     private LinearLayout mLoadingLayout;
 
+    // TODO check if mHttpResponse is necessary (guess it wont be)
     private String mHttpResponse = null;
 
-    private String mSortByPref;
+    private String mSortByPreferenceValue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,11 +84,12 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
         mErrorMessageTextView = (TextView) findViewById(R.id.tv_error_loading_movies);
 
         mLoadingLayout = (LinearLayout) findViewById(R.id.ll_loading_movies);
+        mLoadingLayout.setVisibility(View.VISIBLE);
 
         mRecyclerView.setHasFixedSize(true);
 
-        mSortByPref = PopularMoviesPreferences.getSortByPreferenceValue(this);
-        Log.d(LOG_TAG,"onCreate testing persistence: pref =" + mSortByPref);
+        mSortByPreferenceValue = PopularMoviesPreferences.getSortByPreferenceValue(this);
+        Log.d(LOG_TAG,"onCreate testing persistence: pref =" + mSortByPreferenceValue);
 
         mMoviesAdapter = new MoviesAdapter(this);
         mRecyclerView.setLayoutManager(gridLayoutManager);
@@ -92,15 +118,21 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
 
     @Override
     protected void onResume() {
-        //TODO check if shared preference equals the saved preference selected. if it doesn't restart loader.
-        Log.d(LOG_TAG,"onResume testing persistence: pref =" + mSortByPref);
+        //TODO check where is the best place to reset the mSortByPreference value.
+        if (!mSortByPreferenceValue.equals(PopularMoviesPreferences.getSortByPreferenceValue(this))) {
+            //TODO restart loader
+        }
+        Log.d(LOG_TAG,"onResume testing persistence: pref =" + mSortByPreferenceValue);
         super.onResume();
     }
 
     @Override
     protected void onStart() {
-        //TODO check if shared preference equals the saved preference selected. if it doesn't restart loader.
-        Log.d(LOG_TAG,"onStart testing persistence: pref =" + mSortByPref);
+        //TODO check where is the best place to reset the mSortByPreference value.
+        if (!mSortByPreferenceValue.equals(PopularMoviesPreferences.getSortByPreferenceValue(this))) {
+            //TODO restart loader
+        }
+        Log.d(LOG_TAG,"onStart testing persistence: pref =" + mSortByPreferenceValue);
         super.onStart();
     }
 
@@ -155,6 +187,47 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
         fetchMoviesTask.execute(NetworkUtils.buildTopRatedMoviesUrl());
     }
 
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        switch (id) {
+            case ID_MOVIES_LOADER:
+                String sortByPreferenceValue = PopularMoviesPreferences.getSortByPreferenceValue(this);
+                if (sortByPreferenceValue.equals(R.string.pref_favorites)) {
+                // load favorite movies data from db
+                    return new CursorLoader(this,
+                            MovieContract.MovieEntry.FAVORITE_MOVIES_CONTENT_URI,
+                            PROJECTION_FAVORITE_MOVIES,
+                            null,
+                            null,
+                            MovieContract.MovieEntry._ID);
+                } else {
+                    //if
+                    return new AsyncTaskLoader<Cursor>(this) {
+                        @Override
+                        public Cursor loadInBackground() {
+                            return null;
+                        }
+                    };
+                }
+            default:
+                throw new UnsupportedOperationException("Loader not implemented. Id ="+id);
+        }
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        if (data.getCount()!=0) {
+            displayMovieView();
+        } else {
+            displayErrorMessage();
+        }
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
+    }
+
     public class FetchMoviesTask extends AsyncTask<URL, Void, List<String[]>> {
         @Override
         protected void onPreExecute() {
@@ -181,7 +254,7 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
 
         @Override
         protected void onPostExecute(List<String[]> moviesData) {
-            mLoadingLayout.setVisibility(View.INVISIBLE);
+
             if (moviesData != null) {
                 displayMovieView();
                 mMoviesAdapter.setMoviesData(moviesData);
@@ -201,11 +274,13 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
 
 
     private void displayErrorMessage() {
+        mLoadingLayout.setVisibility(View.INVISIBLE);
         mRecyclerView.setVisibility(View.INVISIBLE);
         mErrorMessageTextView.setVisibility(View.VISIBLE);
     }
 
     private void displayMovieView() {
+        mLoadingLayout.setVisibility(View.INVISIBLE);
         mRecyclerView.setVisibility(View.VISIBLE);
         mErrorMessageTextView.setVisibility(View.INVISIBLE);
     }
