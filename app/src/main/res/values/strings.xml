@@ -2,7 +2,18 @@
     <string name="app_name">PopularMovies</string>
     <string name="error_message">There was an error loading the movies. Please try again</string>
     <string name="loading_message">Loading&#8230;</string>
-    <string name="sort_by">Sort by</string>
-    <string name="title_most_popular">Most popular</string>
-    <string name="title_top_rated">Top rated</string>
+
+    <string name="menu_settings_label">Settings</string>
+
+
+    <string name="sort_by_label">Sort movies by</string>
+    <string name="sort_by_key" translatable="false">sort-by</string>
+
+    <string name="pref_most_popular_label">Most popular</string>
+    <string name="pref_top_rated_label">Top rated</string>
+    <string name="pref_favorites_label">Favorites</string>
+
+    <string name="pref_most_popular" translatable="false">most-popular</string>
+    <string name="pref_top_rated" translatable="false">top-rated</string>
+    <string name="pref_favorites" translatable="false">favorites</string>
 </resources>

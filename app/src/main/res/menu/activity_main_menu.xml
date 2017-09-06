@@ -4,8 +4,8 @@
     android:id="@+id/menu">
 
     <item
-    android:id="@+id/menu_sort_by"
-    android:title="@string/sort_by"
-    app:showAsAction="ifRoom" />
+    android:id="@+id/menu_settings"
+    android:title="@string/menu_settings_label"
+    app:showAsAction="never" />
 
 </menu>

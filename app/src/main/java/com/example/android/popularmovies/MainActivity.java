@@ -9,7 +9,6 @@ import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
@@ -19,6 +18,8 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.example.android.popularmovies.data.MovieContract;
+import com.example.android.popularmovies.data.PopularMoviesPreferences;
 import com.example.android.popularmovies.utils.JsonUtils;
 import com.example.android.popularmovies.utils.NetworkUtils;
 
@@ -44,6 +45,8 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
 
     private String mHttpResponse = null;
 
+    private String mSortByPref;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,6 +61,9 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
         mLoadingLayout = (LinearLayout) findViewById(R.id.ll_loading_movies);
 
         mRecyclerView.setHasFixedSize(true);
+
+        mSortByPref = PopularMoviesPreferences.getSortByPreferenceValue(this);
+        Log.d(LOG_TAG,"onCreate testing persistence: pref =" + mSortByPref);
 
         mMoviesAdapter = new MoviesAdapter(this);
         mRecyclerView.setLayoutManager(gridLayoutManager);
@@ -84,6 +90,20 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
         }
     }
 
+    @Override
+    protected void onResume() {
+        //TODO check if shared preference equals the saved preference selected. if it doesn't restart loader.
+        Log.d(LOG_TAG,"onResume testing persistence: pref =" + mSortByPref);
+        super.onResume();
+    }
+
+    @Override
+    protected void onStart() {
+        //TODO check if shared preference equals the saved preference selected. if it doesn't restart loader.
+        Log.d(LOG_TAG,"onStart testing persistence: pref =" + mSortByPref);
+        super.onStart();
+    }
+
     public boolean hasNetworkConnection() {
         ConnectivityManager cm =
                 (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -103,9 +123,9 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.menu_sort_by:
-                View menuAnchorView = findViewById(R.id.menu_sort_by);
-                displayPopupMenu(menuAnchorView);
+            case R.id.menu_settings:
+                Intent intentSettingsActivity = new Intent(this,SettingsActivity.class);
+                startActivity(intentSettingsActivity);
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -170,30 +190,6 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
             }
             super.onPostExecute(moviesData);
         }
-    }
-
-    private void displayPopupMenu(final View menuAnchorView) {
-        PopupMenu popupMenu = new PopupMenu(this, menuAnchorView);
-        MenuInflater inflater = popupMenu.getMenuInflater();
-        inflater.inflate(R.menu.activity_main_popup_actions, popupMenu.getMenu());
-        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                switch (item.getItemId()) {
-                    case R.id.menu_action_load_popular_movies:
-                        mMoviesAdapter.setMoviesData(null);
-                        loadPopularMoviesData();
-                        return true;
-
-                    case R.id.menu_action_load_toprated_movies:
-                        mMoviesAdapter.setMoviesData(null);
-                        loadTopRatedMoviesData();
-                        return true;
-                }
-                return MainActivity.super.onOptionsItemSelected(item);
-            }
-        });
-        popupMenu.show();
     }
 
     @Override

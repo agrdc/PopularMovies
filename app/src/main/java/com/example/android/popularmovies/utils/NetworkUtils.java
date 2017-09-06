@@ -15,7 +15,7 @@ public class NetworkUtils {
 
     final static String LOG_TAG = NetworkUtils.class.getSimpleName();
 
-    final static String MOVIEDB_IMAGE_BASE_URL = "http://image.tmdb.org/t/p/w500/";
+    final static String MOVIEDB_IMAGE_BASE_URL = "http://image.tmdb.org/t/p/w185/";
 
 
     final static String MOVIEDB_BASE_URL = "http://api.themoviedb.org/3/movie";
