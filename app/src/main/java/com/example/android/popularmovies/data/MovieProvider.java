@@ -1,6 +1,7 @@
 package com.example.android.popularmovies.data;
 
 import android.content.ContentProvider;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
@@ -73,6 +74,9 @@ public class MovieProvider extends ContentProvider {
             default:
                 throw new UnsupportedOperationException("Unknown URI: +" + uri);
         }
+        if (!cursor.moveToNext() || cursor.getCount() == 0) {
+            return null;
+        }
         cursor.setNotificationUri(getContext().getContentResolver(), uri);
         return cursor;
     }
@@ -113,8 +117,23 @@ public class MovieProvider extends ContentProvider {
 
     @Nullable
     @Override
-    public Uri insert(@NonNull Uri uri, @Nullable ContentValues contentValues) {
-        return null;
+    public Uri insert(@NonNull Uri uri, @Nullable ContentValues values) {
+        SQLiteDatabase db = movieDbHelper.getWritableDatabase();
+        long rowCreatedId;
+        Uri returnUri = null;
+        switch (sUriMatcher.match(uri)) {
+            case CODE_FAVORITE_MOVIES:
+                rowCreatedId = db.insert(MovieContract.MovieEntry.FAVORITE_MOVIES_TABLE_NAME, null, values);
+                if (rowCreatedId >= 0) {
+                    returnUri = ContentUris.withAppendedId
+                            (MovieContract.MovieEntry.FAVORITE_MOVIES_CONTENT_URI, rowCreatedId);
+                    getContext().getContentResolver().notifyChange(uri,null);
+                }
+                break;
+            default:
+                throw new UnsupportedOperationException("Unknown URI: +" + uri);
+        }
+        return returnUri;
     }
 
     @Override

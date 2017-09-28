@@ -1,10 +1,16 @@
 <resources>
-    <string name="app_name">PopularMovies</string>
+    <string name="app_name">Popular Movies</string>
+
+    <string name="content_authority">com.example.android.popularmovies</string>
+
     <string name="error_message">There was an error loading the movies. Please try again</string>
     <string name="loading_message">Loading&#8230;</string>
 
     <string name="menu_settings_label">Settings</string>
+    <string name="menu_favorite_label">Favorite</string>
 
+    <string name="movie_rating">%1$.1f/10</string>
+    <string name="movie_duration">%1$d min</string>
 
     <string name="sort_by_label">Sort movies by</string>
     <string name="sort_by_key" translatable="false">sort-by</string>

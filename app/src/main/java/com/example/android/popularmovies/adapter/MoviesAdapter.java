@@ -1,4 +1,4 @@
-package com.example.android.popularmovies;
+package com.example.android.popularmovies.adapter;
 
 
 import android.content.Context;
@@ -6,13 +6,17 @@ import android.content.res.Resources;
 
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
 
+import com.example.android.popularmovies.R;
+import com.example.android.popularmovies.data.Movie;
 import com.example.android.popularmovies.utils.NetworkUtils;
+import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
@@ -20,7 +24,7 @@ import java.util.List;
 public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesAdapterViewHolder> {
 
     private String LOG_TAG = MoviesAdapter.class.getSimpleName();
-    private List<String[]> mMoviesData;
+    private List<Movie> mMovieData;
     private Context mContext;
     private final MoviesAdapterOnClickHandler mClickHandler;
 
@@ -29,8 +33,9 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesAdap
     }
 
     public interface MoviesAdapterOnClickHandler {
-        void onClick(String[] movieSelectedData);
+        void onClick(Movie movieSelected);
     }
+
 
     @Override
     public MoviesAdapter.MoviesAdapterViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -42,24 +47,31 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesAdap
 
     @Override
     public void onBindViewHolder(MoviesAdapter.MoviesAdapterViewHolder holder, int position) {
-        String movieImagePath = mMoviesData.get(position)[0];
+        String movieImagePath = mMovieData.get(position).getImagePath();
         Uri imageUri = NetworkUtils.buildImageUri(movieImagePath);
-        // get width and height from display, to resize the movie image to half width/height of the screen
+        // get width and height from display
         int height = Resources.getSystem().getDisplayMetrics().heightPixels / 2;
         int width = Resources.getSystem().getDisplayMetrics().widthPixels / 2;
-        Picasso.with(mContext).load(imageUri).resize(width, height).centerInside()
+        Log.d(LOG_TAG, "testing screen height " + height + " width " + width);
+        if (width > height) {
+            imageUri = NetworkUtils.buildLargerImageUri(movieImagePath);
+        }
+        //DONE. MAKE THE ITEM FILL THE VIEW ON LANDSCAPE AND VICE-VERSA
+        Picasso.with(mContext).load(imageUri)//.resize(width, height).centerInside()
                 .into(holder.imageViewMoviePoster);
     }
 
     @Override
     public int getItemCount() {
-        if (mMoviesData == null) {
+        if (mMovieData == null) {
             return 0;
-        } else return mMoviesData.size();
+        } else
+            Log.d(LOG_TAG, "size " + mMovieData.size());
+        return mMovieData.size();
     }
 
-    public void setMoviesData(List<String[]> moviesData) {
-        mMoviesData = moviesData;
+    public void setMovieData(List<Movie> moviesData) {
+        mMovieData = moviesData;
         notifyDataSetChanged();
     }
 
@@ -75,8 +87,8 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesAdap
 
         @Override
         public void onClick(View view) {
-            String[] movieSelectedData = mMoviesData.get(getAdapterPosition());
-            mClickHandler.onClick(movieSelectedData);
+            Movie movieSelected = mMovieData.get(getAdapterPosition());
+            mClickHandler.onClick(movieSelected);
         }
     }
 

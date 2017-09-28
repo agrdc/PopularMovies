@@ -25,6 +25,7 @@ public class MovieContract {
 
         public static final String COLUMN_MOVIE_ID = "movie_id";
         public static final String COLUMN_TITLE = "title";
+        public static final String COLUMN_DURATION = "duration";
         public static final String COLUMN_OVERVIEW = "overview";
         public static final String COLUMN_RATING = "rating";
         public static final String COLUMN_RELEASE_DATE = "release_date";
@@ -32,6 +33,7 @@ public class MovieContract {
 
         public static Uri buildMovieUriWithID(long id) {
             return BASE_CONTENT_URI.buildUpon()
+                    .appendPath(PATH_FAVORITE_MOVIES)
                     .appendPath(Long.toString(id))
                     .build();
         }
