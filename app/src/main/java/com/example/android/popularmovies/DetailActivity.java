@@ -466,6 +466,7 @@ public class DetailActivity extends AppCompatActivity implements ReviewsAdapter.
             }
         }
         else if (item.getItemId() == R.id.detail_menu_refresh) {
+            if (mMovie.getDuration()==0)
             getSupportLoaderManager().restartLoader(ID_MOVIE_DURATION_LOADER,null,durationLoaderCallback);
             if (mImageUri!=null && mErrorLoadingImageTextView.getVisibility()==View.VISIBLE) {
                 Picasso.with(this).load(mImageUri).into(mPosterImageView, new Callback() {
@@ -490,6 +491,7 @@ public class DetailActivity extends AppCompatActivity implements ReviewsAdapter.
                     }
                 });
             }
+            showActiveToastShort("Updated.");
         }
         return super.onOptionsItemSelected(item);
     }
