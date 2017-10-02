@@ -58,13 +58,6 @@ public class SettingsFragment extends PreferenceFragmentCompat
                 setPreferenceSummary(preference, sharedPreferences.getString(key, ""));
             }
         }
-            /*if (key.equals(getString(R.string.sort_by_key))) {
-                //TODO check if there is data based on the type of preference selected.
-                //TODO if it does, load this data else fetch it.
-                String valueSelected = PopularMoviesPreferences.getSortByPreferenceValue(getContext());
-                if (valueSelected.equals(getString(R.string.pref_top_rated)) {
-                }
-            }*/
     }
 
     @Override

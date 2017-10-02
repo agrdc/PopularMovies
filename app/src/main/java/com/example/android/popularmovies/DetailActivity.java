@@ -65,25 +65,29 @@ public class DetailActivity extends AppCompatActivity implements ReviewsAdapter.
     private Button mDisplayReviews;
 
     private ProgressBar mDurationLoadingIndicator;
+    private ProgressBar mContentLoadingIndicator;
+
 
     private ImageView mPosterImageView;
 
     private Movie mMovie;
 
+    private Uri mImageUri;
+
     private Menu mMenu;
+
+    private Toast mToastActive;
 
     private TrailersAdapter mTrailersAdapter;
     private ReviewsAdapter mReviewsAdapter;
 
     private LinearLayout mTrailersLayout;
     private LinearLayout mReviewsLayout;
-    private LinearLayout mExtraLayout;
 
     private ConstraintLayout mConstraintLayout;
 
-    private ScrollView mScrollView;
-
     private View mDivider0View;
+    private View mDivider1View;
     private View mDivider2View;
 
     private Boolean isFavorite = null;
@@ -194,13 +198,13 @@ public class DetailActivity extends AppCompatActivity implements ReviewsAdapter.
                 String duration = String.format(getString(R.string.movie_duration), data);
                 mDurationTextView.setText(duration);
             } else {
-
+                String text = "Failed to load duration, please check your connection.";
+                showActiveToastShort(text);
             }
         }
 
         @Override
         public void onLoaderReset(Loader<Integer> loader) {
-
         }
     };
 
@@ -232,13 +236,6 @@ public class DetailActivity extends AppCompatActivity implements ReviewsAdapter.
                             URL url = NetworkUtils.buildMovieExtrasUrl(mMovie.getMovieId(), id);
                             String jsonResponse = NetworkUtils.getResponseFromHttpUrl(url);
                             data = JsonUtils.getMovieExtrasFromHttpResponse(jsonResponse, id);
-                            Bitmap image = null;
-                            try {
-                                image = Picasso.with(context).load(NetworkUtils.buildLargerImageUri(mMovie.getImagePath())).get();
-                                Log.d(LOG_TAG, "image size " + image.getWidth() + "/" + image.getHeight());
-                            } catch (IOException e) {
-
-                            }
                         } catch (IOException | JSONException e) {
                             e.printStackTrace();
                         }
@@ -269,9 +266,9 @@ public class DetailActivity extends AppCompatActivity implements ReviewsAdapter.
                         } else if (mReviewsLayout.getVisibility() == View.VISIBLE) {
                             mDivider2View.setVisibility(View.VISIBLE);
                         }
-                        mScrollView.scrollTo(0, (int) mTrailersRecyclerView.getY());
                     } else {
-                        //TODO layout saying there is no data to be displayed, or error;
+                        String text = "Sorry! There are no trailers for this movie.";
+                        showActiveToastShort(text);
                     }
                     break;
                 case ID_MOVIE_REVIEWS_LOADER:
@@ -282,23 +279,27 @@ public class DetailActivity extends AppCompatActivity implements ReviewsAdapter.
                         if (mTrailersLayout.getVisibility() == (View.VISIBLE)) {
                             mDivider2View.setVisibility(View.VISIBLE);
                         }
-                        mScrollView.scrollTo(0, (int) mReviewsRecyclerView.getY());
                     } else {
-                        //TODO layout saying there is no data to be displayed, or error;
+                        String text = "Sorry! There are no reviews for this movie.";
+                        showActiveToastShort(text);
                     }
                     break;
             }
-
         }
 
         @Override
         public void onLoaderReset(Loader<List<String[]>> loader) {
-
+            switch (loader.getId()) {
+                case ID_MOVIE_TRAILERS_LOADER:
+                    mTrailersAdapter.setMovieTrailersData(null);
+                    break;
+                case ID_MOVIE_REVIEWS_LOADER:
+                    mReviewsAdapter.setMovieReviewsData(null);
+                    break;
+            }
         }
     };
 
-
-    //TODO implement async task loader to fetch: movie duration, trailers, reviews.
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -313,20 +314,20 @@ public class DetailActivity extends AppCompatActivity implements ReviewsAdapter.
         mErrorLoadingImageTextView = (TextView) findViewById(R.id.tv_error_loading_image);
 
         mDurationLoadingIndicator = (ProgressBar) findViewById(R.id.pb_duration_loader);
+        mContentLoadingIndicator = (ProgressBar) findViewById(R.id.pb_content);
 
         mDisplayTrailers = (Button) findViewById(R.id.btn_fetch_trailers);
         mDisplayReviews = (Button) findViewById(R.id.btn_fetch_reviews);
 
-        mScrollView = (ScrollView) findViewById(R.id.sv_detail);
-
         mDivider2View = findViewById(R.id.divider2);
+        mDivider1View = findViewById(R.id.divider1);
         mDivider0View = findViewById(R.id.divider0);
 
         mPosterImageView = (ImageView) findViewById(R.id.iv_poster_movie);
 
         mTrailersLayout = (LinearLayout) findViewById(R.id.ll_movie_trailers);
         mReviewsLayout = (LinearLayout) findViewById(R.id.ll_movie_reviews);
-        mExtraLayout = (LinearLayout) findViewById(R.id.ll_additional);
+
         mConstraintLayout = (ConstraintLayout) findViewById(R.id.cl_detail);
 
         mTrailersRecyclerView = (RecyclerView) findViewById(R.id.rv_videos);
@@ -367,16 +368,19 @@ public class DetailActivity extends AppCompatActivity implements ReviewsAdapter.
             }
         });
 
-
+        mContentLoadingIndicator.setVisibility(View.VISIBLE);
         if (receivedIntent.hasExtra(TAG_MOVIE_DATA)) {
-            mMovie = (Movie) receivedIntent.getSerializableExtra(TAG_MOVIE_DATA);
+            mMovie = receivedIntent.getParcelableExtra(TAG_MOVIE_DATA);
             if (mMovie != null) {
                 String moviePosterPath = mMovie.getImagePath();
-                Uri imageUri = NetworkUtils.buildLargerImageUri(moviePosterPath);
-                //TODO ADD IMAGE LOADING SUCCESS/FAILURE CALLBACKS
-                Picasso.with(this).load(imageUri).into(mPosterImageView, new Callback() {
+                mImageUri = NetworkUtils.buildLargerImageUri(moviePosterPath);
+                Picasso.with(this).load(mImageUri).into(mPosterImageView, new Callback() {
                     @Override
                     public void onSuccess() {
+                        ConstraintSet set = new ConstraintSet();
+                        set.clone(mConstraintLayout);
+                        set.connect(mDivider0View.getId(), ConstraintSet.TOP, mPosterImageView.getId(), ConstraintSet.BOTTOM);
+                        set.applyTo(mConstraintLayout);
                         loadUiData();
                     }
 
@@ -389,13 +393,17 @@ public class DetailActivity extends AppCompatActivity implements ReviewsAdapter.
                         set.applyTo(mConstraintLayout);
                         loadUiData();
                     }
-
                 });
             }
         }
     }
 
     private void loadUiData() {
+        mDivider0View.setVisibility(View.VISIBLE);
+        mDivider1View.setVisibility(View.VISIBLE);
+        mContentLoadingIndicator.setVisibility(View.INVISIBLE);
+        mDisplayTrailers.setVisibility(View.VISIBLE);
+        mDisplayReviews.setVisibility(View.VISIBLE);
         mTitleTextView.setText(mMovie.getTitle());
         mOverviewTextView.setText(mMovie.getOverview());
         mReleaseDateTextView.setText(mMovie.getReleaseDate());
@@ -428,12 +436,12 @@ public class DetailActivity extends AppCompatActivity implements ReviewsAdapter.
                 protected void onInsertComplete(int token, Object cookie, Uri uri) {
                     super.onInsertComplete(token, cookie, uri);
                     if (uri != null) {
-                        Toast.makeText(getApplicationContext(),"Movie was added to favorites!",
-                                Toast.LENGTH_SHORT).show();
+                        String text = "Movie was added to favorites!";
+                        showActiveToastShort(text);
                         getSupportLoaderManager().restartLoader(ID_CHECK_IF_MOVIE_FAVORITE_LOADER, null, checkIfMovieIsFavoriteLoaderCallback);
                     } else {
-                        Toast.makeText(getApplicationContext(),"Error inserting movie to favorites",
-                                Toast.LENGTH_SHORT).show();
+                        String text = "Error inserting movie to favorites";
+                        showActiveToastShort(text);
                     }
                 }
 
@@ -441,12 +449,12 @@ public class DetailActivity extends AppCompatActivity implements ReviewsAdapter.
                 protected void onDeleteComplete(int token, Object cookie, int result) {
                     super.onDeleteComplete(token, cookie, result);
                     if (result > 0) {
-                        Toast.makeText(getApplicationContext(),"Movie was deleted from favorites!",
-                                Toast.LENGTH_SHORT).show();
+                        String text = "Movie was deleted from favorites!";
+                        showActiveToastShort(text);
                         getSupportLoaderManager().restartLoader(ID_CHECK_IF_MOVIE_FAVORITE_LOADER, null, checkIfMovieIsFavoriteLoaderCallback);
                     } else {
-                        Toast.makeText(getApplicationContext(),"Error deleting movie to favorites",
-                                Toast.LENGTH_SHORT).show();
+                        String text = "Error deleting movie to favorites";
+                        showActiveToastShort(text);
                     }
                 }
             };
@@ -455,6 +463,32 @@ public class DetailActivity extends AppCompatActivity implements ReviewsAdapter.
             } else if (isFavorite) {
                 String selection = MovieContract.MovieEntry.COLUMN_MOVIE_ID + " = " + mMovie.getMovieId();
                 asyncQueryHandler.startDelete(0, null, MovieContract.MovieEntry.FAVORITE_MOVIES_CONTENT_URI, selection, null);
+            }
+        }
+        else if (item.getItemId() == R.id.detail_menu_refresh) {
+            getSupportLoaderManager().restartLoader(ID_MOVIE_DURATION_LOADER,null,durationLoaderCallback);
+            if (mImageUri!=null && mErrorLoadingImageTextView.getVisibility()==View.VISIBLE) {
+                Picasso.with(this).load(mImageUri).into(mPosterImageView, new Callback() {
+                    @Override
+                    public void onSuccess() {
+                        mErrorLoadingImageTextView.setVisibility(View.INVISIBLE);
+                        ConstraintSet set = new ConstraintSet();
+                        set.clone(mConstraintLayout);
+                        set.connect(mDivider0View.getId(), ConstraintSet.TOP, mPosterImageView.getId(), ConstraintSet.BOTTOM);
+                        set.applyTo(mConstraintLayout);
+                        loadUiData();
+                    }
+
+                    @Override
+                    public void onError() {
+                        mErrorLoadingImageTextView.setVisibility(View.VISIBLE);
+                        ConstraintSet set = new ConstraintSet();
+                        set.clone(mConstraintLayout);
+                        set.connect(mDivider0View.getId(), ConstraintSet.TOP, mDisplayReviews.getId(), ConstraintSet.BOTTOM);
+                        set.applyTo(mConstraintLayout);
+                        loadUiData();
+                    }
+                });
             }
         }
         return super.onOptionsItemSelected(item);
@@ -485,5 +519,13 @@ public class DetailActivity extends AppCompatActivity implements ReviewsAdapter.
     public void onTrailerClick(String movieTrailerKey) {
         Intent intent = new Intent(Intent.ACTION_VIEW, NetworkUtils.buildYoutubeVideoUri(movieTrailerKey));
         startActivity(intent);
+    }
+
+    public void showActiveToastShort(String text) {
+        if (mToastActive != null)
+            mToastActive.cancel();
+        mToastActive = Toast.makeText(getApplicationContext(), text,
+                Toast.LENGTH_SHORT);
+        mToastActive.show();
     }
 }

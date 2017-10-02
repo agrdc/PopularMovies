@@ -7,10 +7,21 @@
     <string name="loading_message">Loading&#8230;</string>
 
     <string name="menu_settings_label">Settings</string>
+    <string name="menu_refresh_label">Refresh</string>
     <string name="menu_favorite_label">Favorite</string>
 
     <string name="movie_rating">%1$.1f/10</string>
     <string name="movie_duration">%1$d min</string>
+
+    <string name="reviews_label">Reviews:</string>
+    <string name="trailers_label">Trailers:</string>
+
+    <string name="btn_trailers_label">trailers</string>
+    <string name="btn_reviews_label">reviews</string>
+
+    <string name="error_loading_image">Error loading image.\n Check your connection.</string>
+
+
 
     <string name="sort_by_label">Sort movies by</string>
     <string name="sort_by_key" translatable="false">sort-by</string>

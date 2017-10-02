@@ -81,7 +81,7 @@ public class MainActivity extends AppCompatActivity
                                     deliverResult(mMoviesData);
                                 } else
                                     forceLoad();
-                                //super.onStartLoading();
+                                super.onStartLoading();
                             }
 
                             @Override
@@ -183,7 +183,6 @@ public class MainActivity extends AppCompatActivity
         mErrorMessageTextView = (TextView) findViewById(R.id.tv_error_loading_movies);
 
         mLoadingLayout = (LinearLayout) findViewById(R.id.ll_loading_movies);
-        //mLoadingLayout.setVisibility(View.VISIBLE);
 
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(gridLayoutManager);
@@ -211,43 +210,21 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    /*private void restartLoaderIfPrefChanged() {
-        String sortByPrefValueNow = PopularMoviesPreferences.getSortByPreferenceValue(this);
-        if (!mSortByPreferenceValue.equals(sortByPrefValueNow)) {
-            Log.d(LOG_TAG, "preference changed");
-            if (sortByPrefValueNow.equals(getString(R.string.pref_favorites))) {
-                getSupportLoaderManager().destroyLoader(ID_MOVIES_LOADER);
-                mRecyclerView.setAdapter(mFavoriteMoviesAdapter);
-                getSupportLoaderManager().restartLoader(ID_FAVORITE_MOVIES_LOADER, null, favoriteMovieDataLoaderCallback);
-            } else {
-                getSupportLoaderManager().destroyLoader(ID_FAVORITE_MOVIES_LOADER);
-                mRecyclerView.setAdapter(mMoviesAdapter);
-                getSupportLoaderManager().restartLoader(ID_MOVIES_LOADER, null, movieDataLoaderCallback);
-            }
-        }
-    }*/
-
     private void restartLoaders() {
         String sortByPrefValueNow = PopularMoviesPreferences.getSortByPreferenceValue(this);
         if (sortByPrefValueNow.equals(getString(R.string.pref_favorites))) {
-            //TODO check this
             getSupportLoaderManager().destroyLoader(ID_MOVIES_LOADER);
-            //mRecyclerView.setAdapter(mFavoriteMoviesAdapter);
             getSupportLoaderManager().restartLoader(ID_FAVORITE_MOVIES_LOADER, null, favoriteMovieDataLoaderCallback);
         } else {
-            //TODO check this
             getSupportLoaderManager().destroyLoader(ID_FAVORITE_MOVIES_LOADER);
-            // mRecyclerView.setAdapter(mMoviesAdapter);
             getSupportLoaderManager().restartLoader(ID_MOVIES_LOADER, null, movieDataLoaderCallback);
         }
     }
 
     private void startLoader() {
         if (mSortByPreferenceValue.equals(getString(R.string.pref_favorites))) {
-            //mRecyclerView.setAdapter(mFavoriteMoviesAdapter);
             getSupportLoaderManager().initLoader(ID_FAVORITE_MOVIES_LOADER, null, favoriteMovieDataLoaderCallback);
         } else {
-            //mRecyclerView.setAdapter(mMoviesAdapter);
             getSupportLoaderManager().initLoader(ID_MOVIES_LOADER, null, movieDataLoaderCallback);
         }
     }

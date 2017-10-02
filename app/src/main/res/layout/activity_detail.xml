@@ -8,16 +8,20 @@
     android:orientation="vertical"
     tools:context="com.example.android.popularmovies.DetailActivity">
 
-    <!--<ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        tools:layout_editor_absoluteY="0dp"
-        tools:layout_editor_absoluteX="8dp"> -->
-
     <android.support.constraint.ConstraintLayout
         android:id="@+id/cl_detail"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
+
+        <ProgressBar
+            android:id="@+id/pb_content"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            android:visibility="gone"/>
 
         <TextView
             android:id="@+id/tv_title_movie"
@@ -26,7 +30,10 @@
             android:background="@color/colorPrimaryDark"
             android:maxLines="2"
             android:paddingBottom="12dp"
+            android:paddingStart="8dp"
             android:paddingLeft="8dp"
+            android:paddingEnd="8dp"
+            android:paddingRight="8dp"
             android:paddingTop="12dp"
             android:textAppearance="@style/TextAppearance.AppCompat.Widget.ActionBar.Title"
             android:textSize="38sp"
@@ -34,8 +41,7 @@
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.0"
-            tools:text="TITULO FILMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE" />
+            app:layout_constraintVertical_bias="0.0" />
 
 
         <TextView
@@ -51,7 +57,7 @@
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="@+id/vertical_middle"
             app:layout_constraintTop_toBottomOf="@+id/tv_rating_movie"
-            android:text="Error loading image.\n Check your connection"
+            android:text="@string/error_loading_image"
             android:visibility="gone"/>
 
         <ImageView
@@ -73,6 +79,7 @@
             android:layout_width="0dp"
             android:layout_height="2dp"
             android:layout_marginTop="8dp"
+            android:visibility="invisible"
             android:background="@color/colorPrimaryLight"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
@@ -140,21 +147,22 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:text="trailers"
+            android:text="@string/btn_trailers_label"
             app:layout_constraintLeft_toLeftOf="@+id/vertical_middle"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tv_duration_movie" />
+            app:layout_constraintTop_toBottomOf="@+id/tv_duration_movie"
+            android:visibility="invisible"/>
 
         <Button
             android:id="@+id/btn_fetch_reviews"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="0dp"
             android:layout_marginTop="4dp"
-            android:text="reviews"
+            android:text="@string/btn_reviews_label"
             app:layout_constraintLeft_toLeftOf="@+id/btn_fetch_trailers"
             app:layout_constraintRight_toRightOf="@+id/btn_fetch_trailers"
-            app:layout_constraintTop_toBottomOf="@+id/btn_fetch_trailers" />
+            app:layout_constraintTop_toBottomOf="@+id/btn_fetch_trailers"
+            android:visibility="invisible"/>
 
 
         <TextView
@@ -173,6 +181,7 @@
             android:id="@+id/divider1"
             android:layout_width="0dp"
             android:layout_height="2dp"
+            android:visibility="invisible"
             android:layout_marginTop="4dp"
             android:background="@color/colorPrimaryLight"
             app:layout_constraintLeft_toLeftOf="parent"
@@ -202,7 +211,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="8dp"
                     android:layout_marginStart="8dp"
-                    android:text="Trailers:"
+                    android:text="@string/trailers_label"
                     android:textAppearance="@style/TextAppearance.AppCompat.Display1"
                     android:textColor="#000000"
                     android:textSize="22sp" />
@@ -234,7 +243,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Reviews:"
+                    android:text="@string/reviews_label"
                     android:textAppearance="@style/TextAppearance.AppCompat.Display1"
                     android:textColor="#000000"
                     android:textSize="22sp" />
@@ -248,6 +257,3 @@
         </LinearLayout>
     </android.support.constraint.ConstraintLayout>
 </ScrollView>
-
-
-    <!--</ScrollView> -->

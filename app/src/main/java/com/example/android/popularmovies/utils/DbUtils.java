@@ -13,10 +13,8 @@ import com.example.android.popularmovies.data.MovieContract;
  * Created by lsitec207.neto on 20/09/17.
  */
 
-// TODO IMPLEMENT THIS
 public class DbUtils {
 
-    private static Context mContext;
 
     public DbUtils() {
 

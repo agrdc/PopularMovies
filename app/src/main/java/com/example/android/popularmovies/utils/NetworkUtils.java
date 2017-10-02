@@ -35,7 +35,7 @@ public class NetworkUtils {
     final static String PATH_TOP_RATED = "top_rated";
 
     //TODO enter your themoviedb.org API key here
-    final static String API_KEY = "433f36e76544735f18173fa0dce254d5";
+    final static String API_KEY = "";
     final static String PARAM_API_KEY = "api_key";
 
     public boolean hasNetworkConnection(Context context) {
