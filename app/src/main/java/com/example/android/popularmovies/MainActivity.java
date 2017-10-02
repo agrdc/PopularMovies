@@ -37,6 +37,7 @@ import org.json.JSONException;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
@@ -48,8 +49,10 @@ public class MainActivity extends AppCompatActivity
     private FavoriteMoviesAdapter mFavoriteMoviesAdapter;
 
     private RecyclerView mRecyclerView;
+    private ArrayList<Movie> mMoviesData;
 
     private static final String TAG_MOVIE_DATA = "MOVIE_DATA";
+    private static final String TAG_MOVIE_DATA_BUNDLE = "MOVIE_DATA_BUNDLE";
 
     private static final int ID_FAVORITE_MOVIES_LOADER = 324;
     private static final int ID_MOVIES_LOADER = 326;
@@ -57,7 +60,6 @@ public class MainActivity extends AppCompatActivity
     private TextView mErrorMessageTextView;
 
     private LinearLayout mLoadingLayout;
-
     private String mSortByPreferenceValue;
 
     private LoaderManager.LoaderCallbacks<List<Movie>> movieDataLoaderCallback = new LoaderManager.LoaderCallbacks<List<Movie>>() {
@@ -71,12 +73,10 @@ public class MainActivity extends AppCompatActivity
                     if (!sortByPreferenceValue.equals(getString(R.string.pref_favorites))) {
                         final URL url = NetworkUtils.buildMoviesListUrl(context);
                         return new AsyncTaskLoader<List<Movie>>(context) {
-                            List<Movie> mMoviesData;
-
                             @Override
                             protected void onStartLoading() {
                                 displayLoadingIndicator();
-                                if (mMoviesData != null && mMoviesData.size() > 0) {
+                                if (mMoviesData != null) {
                                     Log.d(LOG_TAG, "onStartLoading movies data!=null");
                                     deliverResult(mMoviesData);
                                 } else
@@ -100,7 +100,7 @@ public class MainActivity extends AppCompatActivity
                             @Override
                             public void deliverResult(List<Movie> data) {
                                 Log.d(LOG_TAG, "deliverResult movies loader");
-                                mMoviesData = data;
+                                mMoviesData = (ArrayList<Movie>) data;
                                 super.deliverResult(data);
                             }
                         };
@@ -171,6 +171,8 @@ public class MainActivity extends AppCompatActivity
         }
     };
 
+    boolean hasLoaded;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -193,19 +195,31 @@ public class MainActivity extends AppCompatActivity
         mSortByPreferenceValue = PopularMoviesPreferences.getSortByPreferenceValue(this);
         Log.d(LOG_TAG, "onCreate testing persistence: pref =" + mSortByPreferenceValue);
 
+        hasLoaded = true;
+        if(savedInstanceState!=null && !PopularMoviesPreferences.getSortByPreferenceValue(this).equals(getString(R.string.pref_favorites))) {
+            mMoviesData = savedInstanceState.getParcelableArrayList(TAG_MOVIE_DATA_BUNDLE);
+            mRecyclerView.setAdapter(mMoviesAdapter);
+            mMoviesAdapter.setMovieData(mMoviesData);
+        } else
         startLoader();
     }
 
 
     @Override
     protected void onResume() {
-        restartLoaders();
+        if (!hasLoaded) {
+            hasLoaded=true;
+            restartLoaders();
+        }
         super.onResume();
     }
 
     @Override
     protected void onStart() {
-        restartLoaders();
+        if (!hasLoaded) {
+            hasLoaded=true;
+            restartLoaders();
+        }
         super.onStart();
     }
 
@@ -223,9 +237,9 @@ public class MainActivity extends AppCompatActivity
 
     private void startLoader() {
         if (mSortByPreferenceValue.equals(getString(R.string.pref_favorites))) {
-            getSupportLoaderManager().initLoader(ID_FAVORITE_MOVIES_LOADER, null, favoriteMovieDataLoaderCallback);
+            getSupportLoaderManager().restartLoader(ID_FAVORITE_MOVIES_LOADER, null, favoriteMovieDataLoaderCallback);
         } else {
-            getSupportLoaderManager().initLoader(ID_MOVIES_LOADER, null, movieDataLoaderCallback);
+            getSupportLoaderManager().restartLoader(ID_MOVIES_LOADER, null, movieDataLoaderCallback);
         }
     }
 
@@ -234,6 +248,12 @@ public class MainActivity extends AppCompatActivity
         MenuInflater menuInflater = getMenuInflater();
         menuInflater.inflate(R.menu.activity_main_menu, menu);
         return true;
+    }
+
+    @Override
+    protected void onPause() {
+        hasLoaded = false;
+        super.onPause();
     }
 
     @Override
@@ -273,4 +293,9 @@ public class MainActivity extends AppCompatActivity
         mRecyclerView.setVisibility(View.VISIBLE);
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putParcelableArrayList(TAG_MOVIE_DATA_BUNDLE,mMoviesData);
+        super.onSaveInstanceState(outState);
+    }
 }
